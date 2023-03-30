@@ -1,9 +1,13 @@
-from fastapi import FastAPI
-from typing import Optional
+# main.py
 from enum import Enum
+from typing import Optional, Dict, List, Union
 
-# Создание объекта приложения.
-app = FastAPI(docs_url='/swagger')
+from fastapi import FastAPI
+# Для работы с JSON в теле запроса 
+# импортируем из pydantic класс BaseModel
+from pydantic import BaseModel
+
+app = FastAPI()
 
 
 class EducationLevel(str, Enum):
@@ -11,35 +15,28 @@ class EducationLevel(str, Enum):
     SPECIAL = 'Среднее специальное образование'
     HIGHER = 'Высшее образование'
 
-@app.get('/me', tags=['special methods'], summary='Приветствие автора')
-def hello_author():
-    return {'Hello': 'author'}
 
-@app.get('/{name}',
-         tags=['common methods'],
-         summary='Общее приветствие',
-         response_description='Полная строка приветствия')
-def greetings(* name: str,
-              surname: str,
-              age: Optional[int] = None,
-              is_staff: bool = False, 
-              education_level: Optional[EducationLevel] = None):
-    """
-    Приветствие пользователя:
 
-    - **name**: имя
-    - **surname**: фамилия
-    - **age**: возраст (опционально)
-    - **is_staff**: является ли пользователь сотрудником
-    - **education_level**: уровень образования (опционально)
-    """
-    result = ' '.join([name, surname])
-    result =result.title()
-    if age is not None:
-        result += ', ' + str(age)
-    if is_staff:
-        result += ', staff'
-    if education_level is not None:
-        result += ', ' + education_level.lower()
+class Person(BaseModel):
+    name: str
+    surname: Union[str, List[str]]
+    age: Optional[int]
+    is_staff: bool = False
+    education_level: Optional[EducationLevel]
+
+
+@app.post('/hello')
+def greetings(person: Person) -> Dict[str, str]:
+    if isinstance(person.surname, List):
+        surnames = ' '.join(person.surname)
+    else:
+        surname = person.surname
+    result = ' '.join([person.name, surnames])
+    result = result.title()    
+    if person.age is not None:
+        result += ', ' + str(person.age)
+    if person.education_level is not None:
+        result += ', ' + person.education_level.lower()
+    if person.is_staff:
+        result += ', сотрудник'
     return {'Hello': result}
-    
