@@ -1,28 +1,11 @@
-# main.py
-from enum import Enum
-from typing import Optional, Dict, List, Union
+from typing import Dict, List
 
 from fastapi import FastAPI
-# Для работы с JSON в теле запроса 
-# импортируем из pydantic класс BaseModel
-from pydantic import BaseModel
+
+from schemas import Person
+
 
 app = FastAPI()
-
-
-class EducationLevel(str, Enum):
-    SECONDARY = 'Среднее образование'
-    SPECIAL = 'Среднее специальное образование'
-    HIGHER = 'Высшее образование'
-
-
-
-class Person(BaseModel):
-    name: str
-    surname: Union[str, List[str]]
-    age: Optional[int]
-    is_staff: bool = False
-    education_level: Optional[EducationLevel]
 
 
 @app.post('/hello')
