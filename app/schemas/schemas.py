@@ -12,6 +12,20 @@ class EducationLevel(str, Enum):
 
 
 class Person(BaseModel):
+    """
+    Класс для представления человека.
+
+    :param name: полное имя
+    :type name: str
+    :param surname: фамилия или список фамилий
+    :type surname: Union[str, List[str]]
+    :param age: возраст
+    :type age: Optional[int]
+    :param is_staff: является ли сотрудником
+    :type is_staff: bool
+    :param education_level: уровень образования
+    :type education_level: Optional[EducationLevel]
+    """
     name: str = Field(...,
                       max_lenght=50,
                       title='Полное имя',
@@ -66,12 +80,28 @@ class Person(BaseModel):
 
     @validator('name')
     def name_cant_be_numeric(cls, value: str):
+        """
+        Валидатор для проверки имени на наличие цифр.
+
+        :param value: значение имени
+        :type value: str
+        :return: значение имени (если оно не содержит цифр)
+        :rtype: str
+        """
         if value.isnumeric():
             raise ValueError('not chislo')
         return value
     
     @root_validator(skip_on_failure=True)
     def using_different_languages(cls, values):
+        """
+        Валидатор для проверки использования разных языков в имени и фамилии.
+
+        :param values: значения полей модели
+        :type values: dict
+        :return: значения полей модели (если имя и фамилия используют только латиницу или только кириллицу)
+        :rtype: dict
+        """
         surname = ''.join(values['surname'])
         checked_value = values['name'] + surname
         if (re.search('[а-я]', checked_value, re.IGNORECASE)
